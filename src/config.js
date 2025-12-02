@@ -19,7 +19,7 @@ const getAPIBaseURL = () => {
     // Frontend is on Vite dev server, Backend is on Apache (localhost:80)
     // Use absolute URL to Apache
     const host = window.location.hostname;
-    return `http://${host}/backend/api`;
+    return `http://qr-algo-je.xo.je/backend/api`;
   }
   
   // For production or when Frontend and Backend are on same domain
