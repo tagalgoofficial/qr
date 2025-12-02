@@ -7,26 +7,30 @@
 // API Configuration
 // ============================================
 // Dynamic API URL detection - works with localhost, Ngrok, and production
+// Supports separate Backend and Frontend hosting
 const getAPIBaseURL = () => {
   // Check if we're in browser environment
   if (typeof window === 'undefined') {
     return '/backend/api';
   }
   
-  // Get current origin (protocol + host + port)
-  const origin = window.location.origin;
-  const port = window.location.port;
+  // Priority 1: Check if Backend URL is configured in index.html
+  // This allows setting a different Backend domain for production
+  if (window.API_BACKEND_URL) {
+    return window.API_BACKEND_URL;
+  }
   
-  // If Frontend is running on Vite dev server (port 5173, 3000, 8080, etc.)
+  // Priority 2: If Frontend is running on Vite dev server (port 5173, 3000, 8080, etc.)
   // and Backend is on Apache (port 80), use absolute URL to Apache
+  const port = window.location.port;
   if (port && (port === '5173' || port === '3000' || port === '8080' || port === '5174')) {
     // Frontend is on Vite dev server, Backend is on Apache (localhost:80)
     // Use absolute URL to Apache
     const host = window.location.hostname;
-    return `http://qr-algo-je.xo.je/backend/api`;
+    return `http://${host}/backend/api`;
   }
   
-  // For production or when Frontend and Backend are on same domain
+  // Priority 3: For production or when Frontend and Backend are on same domain
   // Use relative URL (works on localhost:80, Ngrok, and production)
   return '/backend/api';
 };
@@ -144,8 +148,19 @@ const API_CONFIG = {
 // ============================================
 class ApiService {
   constructor() {
-    this.baseURL = API_CONFIG.BASE_URL;
     this.token = localStorage.getItem('auth_token');
+  }
+
+  /**
+   * Get Base URL dynamically (reads from window.API_BACKEND_URL if available)
+   */
+  getBaseURL() {
+    // Check if Backend URL is configured in index.html
+    if (typeof window !== 'undefined' && window.API_BACKEND_URL) {
+      return window.API_BACKEND_URL;
+    }
+    // Otherwise use API_CONFIG.BASE_URL (which is calculated dynamically)
+    return API_CONFIG.BASE_URL;
   }
 
   /**
@@ -172,12 +187,13 @@ class ApiService {
    * Handles both relative and absolute URLs
    */
   buildURL(endpoint) {
+    const baseURL = this.getBaseURL();
     // If baseURL is relative, just concatenate
-    if (this.baseURL.startsWith('/')) {
-      return `${this.baseURL}${endpoint.startsWith('/') ? endpoint : '/' + endpoint}`;
+    if (baseURL.startsWith('/')) {
+      return `${baseURL}${endpoint.startsWith('/') ? endpoint : '/' + endpoint}`;
     }
     // If baseURL is absolute, use it as is
-    return `${this.baseURL}${endpoint}`;
+    return `${baseURL}${endpoint.startsWith('/') ? endpoint : '/' + endpoint}`;
   }
 
   /**

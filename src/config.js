@@ -1,28 +1,32 @@
-/**
+/** 
  * API Configuration
  * Dynamic API URL detection - works with localhost, Ngrok, and production
+ * Supports separate Backend and Frontend hosting
  */
-// Auto-detect API base URL based on current domain
+// Auto-detect API base URL based on current domain or configured Backend URL
 const getAPIBaseURL = () => {
   // Check if we're in browser environment
   if (typeof window === 'undefined') {
     return '/backend/api';
   }
   
-  // Get current origin (protocol + host + port)
-  const origin = window.location.origin;
-  const port = window.location.port;
+  // Priority 1: Check if Backend URL is configured in index.html
+  // This allows setting a different Backend domain for production
+  if (window.API_BACKEND_URL) {
+    return window.API_BACKEND_URL;
+  }
   
-  // If Frontend is running on Vite dev server (port 5173, 3000, 8080, etc.)
+  // Priority 2: If Frontend is running on Vite dev server (port 5173, 3000, 8080, etc.)
   // and Backend is on Apache (port 80), use absolute URL to Apache
+  const port = window.location.port;
   if (port && (port === '5173' || port === '3000' || port === '8080' || port === '5174')) {
     // Frontend is on Vite dev server, Backend is on Apache (localhost:80)
     // Use absolute URL to Apache
     const host = window.location.hostname;
-    return `http://qr-algo-je.xo.je/backend/api`;
+    return `http://${host}/backend/api`;
   }
   
-  // For production or when Frontend and Backend are on same domain
+  // Priority 3: For production or when Frontend and Backend are on same domain
   // Use relative URL (works on localhost:80, Ngrok, and production)
   return '/backend/api';
 };

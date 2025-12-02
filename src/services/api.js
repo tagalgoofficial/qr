@@ -8,8 +8,19 @@ import API_CONFIG from '../config';
 
 class ApiService {
   constructor() {
-    this.baseURL = API_CONFIG.BASE_URL;
     this.token = localStorage.getItem('auth_token');
+  }
+
+  /**
+   * Get Base URL dynamically (reads from window.API_BACKEND_URL if available)
+   */
+  getBaseURL() {
+    // Check if Backend URL is configured in index.html
+    if (typeof window !== 'undefined' && window.API_BACKEND_URL) {
+      return window.API_BACKEND_URL;
+    }
+    // Otherwise use API_CONFIG.BASE_URL (which is calculated dynamically)
+    return API_CONFIG.BASE_URL;
   }
 
   /**
@@ -36,12 +47,13 @@ class ApiService {
    * Handles both relative and absolute URLs
    */
   buildURL(endpoint) {
+    const baseURL = this.getBaseURL();
     // If baseURL is relative, just concatenate
-    if (this.baseURL.startsWith('/')) {
-      return `${this.baseURL}${endpoint.startsWith('/') ? endpoint : '/' + endpoint}`;
+    if (baseURL.startsWith('/')) {
+      return `${baseURL}${endpoint.startsWith('/') ? endpoint : '/' + endpoint}`;
     }
     // If baseURL is absolute, use it as is
-    return `${this.baseURL}${endpoint}`;
+    return `${baseURL}${endpoint.startsWith('/') ? endpoint : '/' + endpoint}`;
   }
 
   /**
