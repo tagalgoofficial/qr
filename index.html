@@ -20,11 +20,21 @@
     <link rel="manifest" href="/manifest.json" />
     
     <!-- Backend API Configuration -->
+    <!-- IMPORTANT: This script MUST be executed BEFORE main.jsx loads -->
     <!-- Change this URL to your Backend domain when deploying -->
     <script>
-      window.API_BACKEND_URL = 'http://qr-algo-je.xo.je/backend/api';
-      // For local development, uncomment the line below and comment the line above:
-      // window.API_BACKEND_URL = '/backend/api';
+      (function() {
+        // Set Backend API URL - This will be used by the application
+        // For production with separate Backend hosting:
+        window.API_BACKEND_URL = 'http://qr-algo-je.xo.je/backend/api';
+        
+        // For local development, uncomment the line below and comment the line above:
+        // window.API_BACKEND_URL = '/backend/api';
+        
+        // Log for debugging - this should appear in console immediately
+        console.log('📡 [index.html] Backend API URL configured:', window.API_BACKEND_URL);
+        console.log('📡 [index.html] Current origin:', window.location.origin);
+      })();
     </script>
     
     <title>QR Menu</title>

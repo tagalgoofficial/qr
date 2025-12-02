@@ -10,10 +10,18 @@ const getAPIBaseURL = () => {
     return '/backend/api';
   }
   
-  // Priority 1: Check if Backend URL is configured in index.html
-  // This allows setting a different Backend domain for production
-  if (window.API_BACKEND_URL) {
+  // Priority 1: Check if Backend URL is configured in index.html (window.API_BACKEND_URL)
+  // This is set via inline script in index.html and should be available immediately
+  if (typeof window !== 'undefined' && window.API_BACKEND_URL) {
+    console.log('🔗 [Priority 1] Using window.API_BACKEND_URL:', window.API_BACKEND_URL);
     return window.API_BACKEND_URL;
+  }
+  
+  // Priority 1.5: Check if Backend URL is set via Vite environment variable
+  // This can be set during build: VITE_API_BACKEND_URL=http://qr-algo-je.xo.je/backend/api npm run build
+  if (import.meta.env.VITE_API_BACKEND_URL) {
+    console.log('🔗 [Priority 1.5] Using VITE_API_BACKEND_URL:', import.meta.env.VITE_API_BACKEND_URL);
+    return import.meta.env.VITE_API_BACKEND_URL;
   }
   
   // Priority 2: If Frontend is running on Vite dev server (port 5173, 3000, 8080, etc.)
@@ -23,12 +31,18 @@ const getAPIBaseURL = () => {
     // Frontend is on Vite dev server, Backend is on Apache (localhost:80)
     // Use absolute URL to Apache
     const host = window.location.hostname;
-    return `http://${host}/backend/api`;
+    const url = `http://${host}/backend/api`;
+    console.log('🔗 [Priority 2] Using Vite dev server Backend URL:', url);
+    return url;
   }
   
   // Priority 3: For production or when Frontend and Backend are on same domain
   // Use relative URL (works on localhost:80, Ngrok, and production)
-  return '/backend/api';
+  const relativeUrl = '/backend/api';
+  console.log('🔗 [Priority 3] Using relative Backend URL:', relativeUrl);
+  console.warn('⚠️ window.API_BACKEND_URL is not set. Using relative URL.');
+  console.warn('⚠️ For separate Backend hosting, set window.API_BACKEND_URL in index.html or use VITE_API_BACKEND_URL environment variable.');
+  return relativeUrl;
 };
 
 const API_CONFIG = {

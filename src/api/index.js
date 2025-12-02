@@ -155,12 +155,22 @@ class ApiService {
    * Get Base URL dynamically (reads from window.API_BACKEND_URL if available)
    */
   getBaseURL() {
-    // Check if Backend URL is configured in index.html
+    // Priority 1: Check if Backend URL is configured in index.html
     if (typeof window !== 'undefined' && window.API_BACKEND_URL) {
+      console.log('🔗 [ApiService] Using window.API_BACKEND_URL:', window.API_BACKEND_URL);
       return window.API_BACKEND_URL;
     }
-    // Otherwise use API_CONFIG.BASE_URL (which is calculated dynamically)
-    return API_CONFIG.BASE_URL;
+    
+    // Priority 2: Check Vite environment variable
+    if (import.meta.env.VITE_API_BACKEND_URL) {
+      console.log('🔗 [ApiService] Using VITE_API_BACKEND_URL:', import.meta.env.VITE_API_BACKEND_URL);
+      return import.meta.env.VITE_API_BACKEND_URL;
+    }
+    
+    // Priority 3: Use API_CONFIG.BASE_URL (which is calculated dynamically)
+    const baseURL = API_CONFIG.BASE_URL;
+    console.log('🔗 [ApiService] Using API_CONFIG.BASE_URL:', baseURL);
+    return baseURL;
   }
 
   /**
